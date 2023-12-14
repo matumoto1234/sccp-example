@@ -15,7 +15,6 @@ export const postNewTodo = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify(todo),
-    mode: "no-cors",
   })
     .then(async (res): Promise<null | ErrorWrapper> => {
       if (res.ok) {
@@ -34,7 +33,6 @@ export const postNewTodo = async (
             kind: ErrorKind.InternalServerError,
           };
         default:
-          console.log(res.status)
           return {
             error: new Error("Unknown Error"),
             kind: ErrorKind.Unknown,

@@ -1,0 +1,43 @@
+.todoCardList {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.todoCard {
+  height: 180px;
+  width: 900px;
+  box-sizing: border-box;
+  padding: 20px 40px;
+  border-radius: 12px;
+  overflow: hidden;
+  word-break: break-all;
+  outline: 1px solid #258EEF;
+}
+
+.todoCardTitle {
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 150%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.todoCardDescription {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 150%;
+  line-break: anywhere;
+  text-overflow: ellipsis;
+  max-height: 80px;
+}
+
+.todoCardStatus {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 150%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

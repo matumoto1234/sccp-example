@@ -1,0 +1,109 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: sccp lec10 API
+servers:
+  - url: 'http://localhost:8080'
+    description: localhost
+
+paths:
+  /todo-list:
+    get:
+      tags:
+        - todo list
+      summary:
+        全てのTodoを取得する
+      description:
+        DBに保存されている全てのTodoを取得する
+      responses:
+        200:
+          description:
+            ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+              examples:
+                example-1:
+                  value:
+                    - id: 1
+                      title: 朝ごはんを食べる
+                      description: 買っておいたフルーツグラノーラを牛乳と一緒に食べる
+                      status: in-progress
+                    - id: 2
+                      title: 9:00までに学校に行く
+                      description: 1限の微積分1に遅れないように登校する
+                      status: pending
+
+  /todo:
+    post:
+      tags:
+        - todo
+      summary:
+        Todoを作成する
+      description:
+        title, description, statusをリクエストボディに含めてTodoを作成する
+      parameters:
+        - in: body
+          name: title
+          schema:
+            type: string
+          description: Todoのタイトル
+          required: true
+        - in: body
+          name: "description"
+          schema:
+            type: string
+          description: Todoの説明
+          required: true
+        - in: body
+          name: status
+          schema:
+            $ref: '#/components/schemas/Status'
+          description: Todoのステータス
+          required: true
+      responses:
+        "200":
+          description: OK
+
+  /todo/{id}:
+    delete:
+      tags:
+        - todo
+      summary:
+        Todoを削除する
+      description:
+        パスパラメータによって指定したidを持つTodoを削除する
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: 削除したいTodoのid
+          required: true
+      responses:
+        "200":
+          description: OK
+
+components:
+  schemas:
+    Todo:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+
+    Status:
+      type: string
+      enum:
+        - pending
+        - in-progress
+        - done

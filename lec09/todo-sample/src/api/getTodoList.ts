@@ -18,7 +18,8 @@ const responseToTodo = (response: Response): Todo => {
 };
 
 export const getTodoList = async (): Promise<Todo[] | ErrorWrapper> => {
-  return fetch("http://localhost:8080/todo-list")
+  const url = "http://localhost:8080/todo-list"
+  return fetch(url)
     .then(async (res): Promise<Todo[] | ErrorWrapper> => {
       if (!res.ok) {
         switch (res.status) {
@@ -34,19 +35,21 @@ export const getTodoList = async (): Promise<Todo[] | ErrorWrapper> => {
             };
           default:
             return {
-              error: new Error("Unknown Error"),
+              error: new Error(String(res.status)),
               kind: ErrorKind.Unknown,
             };
         }
       }
 
       const body = await res.json();
-      console.log(body)
       return body.map(responseToTodo);
     })
     .catch((e) => {
+      const wrappedErr = e
+      wrappedErr.message = e.message + `: url : ${url}`
+
       return {
-        error: e,
+        error: wrappedErr,
         kind: ErrorKind.Unknown,
       };
     });

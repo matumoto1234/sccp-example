@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -72,17 +73,7 @@ type postRequest struct {
 	Status      string `json:"status"`
 }
 
-func todoHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,UPDATE,OPTIONS")
-
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
+func todoHandlerPost(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Print(err)
@@ -123,9 +114,63 @@ func todoHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func todoHandlerDelete(w http.ResponseWriter, r *http.Request) {
+	// "/todo/{id}" -> ["todo", "{id}"]
+	breadCrumbs := strings.Split(r.URL.Path, "/")
+	id := breadCrumbs[2]
+
+	db, err := sql.Open("sqlite3", "./todo.db")
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	_, err = tx.Exec("DELETE FROM todos WHERE id = ?", id)
+	if err != nil {
+		log.Print(err)
+		tx.Rollback()
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Print(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func todoHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,UPDATE,OPTIONS")
+
+	switch r.Method {
+	case http.MethodOptions:
+		w.WriteHeader(http.StatusOK)
+		return
+	case http.MethodPost:
+		todoHandlerPost(w, r)
+		return
+	case http.MethodDelete:
+		todoHandlerDelete(w, r)
+		return
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 func main() {
 	log.Println("server started.")
 	http.HandleFunc("/todo-list", todoListHandler)
 	http.HandleFunc("/todo", todoHandler)
+	http.HandleFunc("/todo/", todoHandler)
 	http.ListenAndServe(":8080", nil)
 }
